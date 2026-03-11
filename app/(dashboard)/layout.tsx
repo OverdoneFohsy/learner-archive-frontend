@@ -1,11 +1,13 @@
 import Link from 'next/link';
-import { LayoutDashboard, MessageSquare, Settings, LogOut, PlusCircle, Plus } from 'lucide-react';
-import { getSessionsAction } from './action';
+import { LayoutDashboard, MessageSquare, Settings, LogOut, PlusCircle, Plus, Trash2 } from 'lucide-react';
+import { deleteSessionAction, getSessionsAction } from './action';
+import SidebarNav from '@/components/SideBarNav';
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
 
   const sessions = await getSessionsAction();
   console.log( `sessions: ${sessions}`)
+
   return (
     <div className="flex h-screen w-full overflow-hidden bg-slate-50">
       {/* Sidebar */}
@@ -34,23 +36,7 @@ export default async function DashboardLayout({ children }: { children: React.Re
         </div>
 
         {/* Primary Navigation */}
-        <nav className="flex-1 px-4 space-y-2 overflow-y-auto">          
-          <div className="py-4">
-            <p className="px-4 text-xs font-semibold text-slate-400 uppercase tracking-wider mb-2">Recent Chats</p>
-            {sessions.map((session:any) => (
-            <Link 
-            key={session.id}
-            href={`/conversation/${session.id}`} 
-            className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-2xl transition-colors group"
-          >
-            <MessageSquare size={18} className="shrink-0 group-hover:text-blue-600" />
-            <span className="text-sm truncate font-medium">
-              {session.title || 'Untitled Chat'}
-            </span>
-          </Link>
-            ))}
-          </div>
-        </nav>
+        <SidebarNav sessions={sessions}></SidebarNav>
 
         {/* Bottom Section: Settings & Logout */}
         <div className="p-4 border-t border-slate-100 space-y-1">
