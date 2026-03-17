@@ -41,3 +41,17 @@ export async function signup(prevState: any, formData: FormData){
 
     return redirect('/login?message=Check your email to confirm your account');
 }
+
+export async function logout() {
+    const supabase = await createClient();
+    
+    const { error } = await supabase.auth.signOut();
+    
+    if (error) {
+        console.error('Logout error:', error.message);
+        // return { error: 'Failed to log out' };
+    }
+
+    // Redirect to login or landing page after sign out
+    redirect('/login');
+}

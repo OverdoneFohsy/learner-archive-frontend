@@ -5,6 +5,7 @@ import { LogOut, MessageSquare, Plus, PlusCircle, Trash2, PanelLeftClose, PanelL
 import { usePathname, useRouter } from "next/navigation";
 import Link from "next/link";
 import React from "react";
+import {logout} from "@/app/(auth)/login/actions";
 
 // Added isMobile prop to the interface
 export default function SidebarNav({ sessions, isMobile = false }: { sessions: any[], isMobile?: boolean }) {
@@ -96,11 +97,17 @@ export default function SidebarNav({ sessions, isMobile = false }: { sessions: a
 
             {/* Logout */}
             <div className="p-4 border-t border-slate-100">
-                <button title="Logout" className="w-full flex items-center justify-center gap-3 px-3 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-colors">
+            <form action={logout}>
+                <button 
+                    type="submit" // Change to submit
+                    title="Logout" 
+                    className="w-full flex items-center justify-center gap-3 px-3 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-colors"
+                >
                     <LogOut size={20} />
                     {!collapsed && <span className="font-medium truncate">Logout</span>}
                 </button>
-            </div>
+            </form>
+</div>
         </div>
     );
 }
