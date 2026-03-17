@@ -36,7 +36,7 @@ export default function SidebarNav({ sessions, isMobile = false }: { sessions: a
         >
             {/* Toggle Header */}
             <div className={`p-4 flex items-center ${collapsed ? 'justify-center' : 'justify-between'}`}>
-                {!collapsed && <h2 className="text-xl font-bold text-blue-600 truncate">Learner's Archive</h2>}
+                {!collapsed && <h2 className="text-xl font-bold text-blue-600 truncate">Learner Archive</h2>}
                 
                 {/* Only show the toggle button if we are NOT on mobile */}
                 {!isMobile && (
