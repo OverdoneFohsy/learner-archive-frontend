@@ -26,7 +26,7 @@ export async function digestVideoAction(prevState: any, formData: FormData) {
 
     console.log(`Error: ${result.detail}`);
     revalidatePath('/digestion');
-    return { success: true, message: 'Video is being processed!' };
+    return { success: result.status, message: result.message || 'Youtube video uploaded and processing!' };
   } catch (err: any) {
     return { error: err.message };
   }
@@ -58,7 +58,7 @@ export async function digestPdfAction(prevState: any, formData: FormData) {
     if (!response.ok) throw new Error(result.detail || 'Failed to process PDF');
 
     revalidatePath('/digestion');
-    return { success: true, message: 'PDF uploaded and processing!' };
+    return { success: result.status, message: result.message || 'PDF uploaded and processing!' };
   } catch (err: any) {
     console.log("Error caught");
     return { error: err.message };
