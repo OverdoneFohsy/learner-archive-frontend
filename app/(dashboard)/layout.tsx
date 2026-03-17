@@ -1,60 +1,61 @@
-import Link from 'next/link';
-import { LayoutDashboard, MessageSquare, Settings, LogOut, PlusCircle, Plus, Trash2 } from 'lucide-react';
-import { deleteSessionAction, getSessionsAction } from './action';
+import { getSessionsAction, getSources } from './action';
 import SidebarNav from '@/components/SideBarNav';
+import SidebarSource from '@/components/SideBarSource';
+import { Sheet, SheetContent, SheetTrigger } from "@/components/ui/sheet";
+import { Menu, LayoutDashboard } from "lucide-react";
 
 export default async function DashboardLayout({ children }: { children: React.ReactNode }) {
-
   const sessions = await getSessionsAction();
-  console.log( `sessions: ${sessions}`)
+  const sources = await getSources();
 
   return (
-    <div className="flex h-screen w-full overflow-hidden bg-slate-50">
-      {/* Sidebar */}
-      <aside className="w-72 bg-white border-r border-slate-200 flex flex-col">
-        {/* Logo Section */}
-        <div className="p-6">
-          <h2 className="text-xl font-bold text-blue-600 tracking-tight">Learner's Archive</h2>
-        </div>
+    <div className="flex h-screen w-full overflow-hidden bg-slate-50 relative">
+      
+      {/* --- LEFT SIDEBAR --- */}
+      {/* Desktop: Always visible above 1280px */}
+      <div className="hidden xl:flex h-full">
+        <SidebarNav sessions={sessions} />
+      </div>
+      
+      {/* Mobile/Tablet: Drawer via Shadcn Sheet */}
+      <div className="xl:hidden fixed top-4 left-4 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <button className="p-2 bg-white border border-slate-200 rounded-xl shadow-sm text-slate-600 hover:bg-slate-50">
+              <Menu size={20} />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="left" className="p-0 w-[280px] border-none">
+            <SidebarNav sessions={sessions} isMobile={true} />
+          </SheetContent>
+        </Sheet>
+      </div>
 
-        {/* Action Button: New Conversation */}
-        <div className="px-4 mb-4">
-          <Link 
-            href="/conversation" 
-            className="flex items-center justify-center gap-2 w-full py-3 bg-blue-600 text-white rounded-2xl font-bold shadow-lg shadow-blue-600/20 hover:bg-blue-700 transition-all active:scale-95"
-          >
-            <Plus size={20} />
-            <span>New Chat</span>
-          </Link>
-        </div>
-
-        <div className="px-4 mb-4">
-          <Link href="/digestion" className="flex items-center gap-3 px-4 py-3 text-slate-700 hover:bg-slate-50 rounded-2xl transition-colors">
-            <PlusCircle size={20} />
-            <span className="font-medium">New Digestion</span>
-          </Link>
-        </div>
-
-        {/* Primary Navigation */}
-        <SidebarNav sessions={sessions}></SidebarNav>
-
-        {/* Bottom Section: Settings & Logout */}
-        <div className="p-4 border-t border-slate-100 space-y-1">
-          <Link href="/settings" className="flex items-center gap-3 px-4 py-3 text-slate-600 hover:bg-slate-50 rounded-2xl">
-            <Settings size={20} />
-            <span className="font-medium">Settings</span>
-          </Link>
-          <button className="w-full flex items-center gap-3 px-4 py-3 text-red-500 hover:bg-red-50 rounded-2xl transition-colors">
-            <LogOut size={20} />
-            <span className="font-medium">Logout</span>
-          </button>
-        </div>
-      </aside>
-
-      {/* Main Content Area */}
-      <main className="flex-1 overflow-y-auto">
+      {/* --- MAIN CONTENT AREA --- */}
+      <main className="flex-1 min-w-0 h-full overflow-y-auto bg-white relative z-10">
         {children}
       </main>
+
+      {/* --- RIGHT SIDEBAR --- */}
+      {/* Desktop: Always visible above 1280px */}
+      <div className="hidden xl:flex h-full">
+        <SidebarSource sources={sources} />
+      </div>
+
+      {/* Mobile/Tablet: Drawer via Shadcn Sheet */}
+      <div className="xl:hidden fixed top-4 right-4 z-50">
+        <Sheet>
+          <SheetTrigger asChild>
+            <button className="p-2 bg-white border border-slate-200 rounded-xl shadow-sm text-slate-600 hover:bg-slate-50">
+              <LayoutDashboard size={20} />
+            </button>
+          </SheetTrigger>
+          <SheetContent side="right" className="p-0 w-[320px] border-none">
+            <SidebarSource sources={sources} isMobile={true} />
+          </SheetContent>
+        </Sheet>
+      </div>
+      
     </div>
   );
 }
