@@ -4,6 +4,7 @@ import { createClient } from '@/utils/supabase/server';
 import { revalidatePath } from 'next/cache';
 import { redirect } from 'next/navigation';
 
+
 const FASTAPI_URL = process.env.NEXT_PUBLIC_API_URL || 'http://127.0.0.1:8000/api';
 
 /**
@@ -50,7 +51,12 @@ export async function sendMessageAction(sessionId: string, message: string) {
 
     if (!response.ok) {
       const errorData = await response.json();
-      throw new Error(errorData.detail || 'Failed to get AI response');
+      throw new Error(errorData.detail || 'Failed to get AI response. Please try again later.');
+    }
+
+    if (response.status === 429) {
+        const errorData = await response.json();
+        throw new Error(errorData.detail || 'Quota limit reached. Please try again later.');
     }
 
     const data = await response.json();

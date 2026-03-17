@@ -28,7 +28,7 @@ export default function NewChatPage() {
   ];
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center">
+    <div className="flex flex-col items-center justify-center min-h-[80vh] px-6 text-center no-scrollbar">
       {/* Hero Section */}
       <div className="mb-12">
         <div className="w-16 h-16 bg-blue-600 rounded-3xl flex items-center justify-center mx-auto mb-6 shadow-xl shadow-blue-200 animate-in fade-in zoom-in duration-500">

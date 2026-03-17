@@ -7,6 +7,7 @@ import { useSearchParams } from 'next/navigation';
 import { Textarea } from '@/components/ui/textarea';
 import ReactMarkdown from 'react-markdown';
 import remarkGfm from 'remark-gfm';
+import { toast } from "sonner"
 
 type Message = {
   role: 'user' | 'assistant',
@@ -69,38 +70,58 @@ export default function ChatPage({ params }: { params: Promise<{id: string }> })
 
   const handleSendMessage = async (e?: React.FormEvent, manualInput?: string) => {
     e?.preventDefault();
-
+  
     const messageContent = manualInput || input;
     if (!messageContent.trim() || isLoading) return;
-
-    // 1. Add user message to UI
-    const userMessage = { role: 'user', content: messageContent };
-    setMessages((prev) => [...prev, userMessage as Message]);
-    if(!manualInput) setInput('');
+  
+    // 1. Snapshot for rollback
+    const savedInput = messageContent;
+    const tempId = Date.now(); // We use a timestamp to track this specific optimistic message
+  
+    // 2. Optimistic Update
+    setMessages((prev) => [...prev, { role: 'user', content: messageContent, id: tempId } as any]);
+    if (!manualInput) setInput('');
     setIsLoading(true);
-
-    const response = await sendMessageAction(sessionId, messageContent);
-
-    await logToTerminal(response.error);
-    await logToTerminal(response.content);
-    if (response.error){
-      setMessages((prev)=> [...prev, {
-        role: 'assistant',
-        content: `Error: ${response.error}. Please try again.`
-      }]);
+  
+    try {
+      const response = await sendMessageAction(sessionId, messageContent);
+  
+      // 3. Check for the exception/error from your Server Action
+      if (response.error) {
+        // ROLLBACK LOGIC
+        // Put the text back if it wasn't a "manual" hint click
+        if (!manualInput) setInput(savedInput);
+  
+        // Filter out the optimistic message so it disappears from the chat
+        setMessages((prev) => prev.filter((msg: any) => msg.id !== tempId));
+  
+        // Show the Sonner toast
+        toast.warning("Message not sent", {
+          description: response.error.includes("quota") 
+            ? "AI limit reached. Your message has been restored." 
+            : response.error,
+          duration: 5000,
+        });
+      } 
+      else if (response.content) {
+        setMessages((prev) => [...prev, { role: 'assistant', content: response.content }]);
+      }
+    } catch (err: any) {
+      // Handle unexpected network crashes
+      logToTerminal(`Error message: ${err.message}`);
+      setInput(savedInput);
+      setMessages((prev) => prev.filter((msg: any) => msg.id !== tempId));
+      toast.error("Message failed", {
+        description: err.message,
+        duration: 5000
+      });
+    } finally {
+      setIsLoading(false);
     }
-    else if (response.content){
-      setMessages((prev)=> [...prev, {
-        role: 'assistant',
-        content: response.content
-      }]);
-    }
-
-    setIsLoading(false);
   };
 
   if (messages.length === 0 && !isLoading){
-    return (<div className="h-full flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-700">
+    return (<div className="h-full w-full flex flex-col items-center justify-center text-center space-y-4 animate-in fade-in duration-700">
       <div className="w-16 h-16 bg-blue-50 rounded-2xl flex items-center justify-center text-blue-600 shadow-sm">
         <Sparkles size={32} />
       </div>
@@ -130,7 +151,7 @@ export default function ChatPage({ params }: { params: Promise<{id: string }> })
   else return (
     <div className="flex flex-col h-[calc(100vh-2rem)] max-w-4xl mx-auto p-4">
       {/* Messages Area */}
-      <div className="flex-1 overflow-y-auto space-y-6 pb-20 pr-20">
+      <div className="flex-1 overflow-y-auto space-y-6 pb-20 no-scrollbar [mask-image:linear-gradient(to_bottom,black_85%,transparent_100%)]">
         {messages.map((msg, i) => (
           <div key={i} className={`flex gap-4 ${msg.role === 'user' ? 'justify-end' : 'justify-start'}`}>
             <div className={`flex gap-3 max-w-[80%] min-w-0 ${msg.role === 'user' ? 'flex-row-reverse' : 'flex-row'}`}>
@@ -181,24 +202,36 @@ export default function ChatPage({ params }: { params: Promise<{id: string }> })
       </div>
 
       {/* Input Area */}
-      <div className="fixed bottom-8 left-1/2 -translate-x-1/2 w-full max-w-3xl px-4">
-        <form 
-          onSubmit={handleSendMessage}
-          className="relative bg-white border border-slate-200 rounded-[28px] shadow-2xl p-2 flex items-center gap-2 focus-within:border-blue-400 transition-all"
-        >
+      <div className="sticky bottom-0 bg-gradient-to-t from-white via-white to-transparent pt-2 px-4">
+        <div className="max-w-3xl mx-auto">
+          <form 
+            onSubmit={handleSendMessage}
+            className="relative bg-white border border-slate-200 rounded-[28px] shadow-lg p-2 flex items-center gap-2 focus-within:border-blue-400 focus-within:ring-4 focus-within:ring-blue-50 transition-all"
+          >
             <Textarea
               value={input}
               onChange={(e) => setInput(e.target.value)}
+              onKeyDown={(e) => {
+                if (e.key === 'Enter' && !e.shiftKey) {
+                  e.preventDefault();
+                  handleSendMessage();
+                }
+              }}
               placeholder="Ask your archive anything..."
-              className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none px-4 py-3 text-slate-700 placeholder:text-slate-400"
+              className="flex-1 bg-transparent border-none shadow-none focus-visible:ring-0 focus-visible:ring-offset-0 resize-none px-4 py-3 text-slate-700 placeholder:text-slate-400 min-h-[52px] max-h-[200px]"
             />
-          <button 
-            type="submit"
-            className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all active:scale-95"
-          >
-            <Send size={20} />
-          </button>
-        </form>
+            <button 
+              type="submit"
+              disabled={isLoading || !input.trim()}
+              className="p-3 bg-blue-600 text-white rounded-full hover:bg-blue-700 transition-all active:scale-95 disabled:opacity-50 disabled:bg-slate-300 disabled:scale-100"
+            >
+              <Send size={20} />
+            </button>
+          </form>
+          <p className="text-[10px] text-center text-slate-400 mt-3">
+            Press Enter to send, Shift + Enter for new line
+          </p>
+        </div>
       </div>
     </div>
   );
