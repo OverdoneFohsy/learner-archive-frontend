@@ -41,7 +41,7 @@ export default function LoginForm({ initialMessage }: { initialMessage?: string 
 
         if (Object.keys(errors).length > 0) {
             setClientErrors(errors);
-            return; // Stop the action from firing
+            return;
         }
 
         // Trigger the actual Server Action if validation passes
@@ -63,7 +63,7 @@ export default function LoginForm({ initialMessage }: { initialMessage?: string 
                     </label>
                     <input
                         name="email"
-                        type="text" // 'text' instead of 'email' to use our custom UI validation
+                        type="text"
                         placeholder='name@example.com'
                         className={`w-full px-4 py-2 text-black border rounded-xl shadow-sm focus:outline-none focus:ring-2 transition-all ${
                             clientErrors.email

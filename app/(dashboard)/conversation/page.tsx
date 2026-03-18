@@ -38,7 +38,7 @@ export default function NewChatPage() {
           What are we learning today?
         </h1>
         <p className="text-slate-500 max-w-md mx-auto text-lg">
-          Ask anything about your archived videos and documents. Your AI tutor is ready.
+          Ask anything about your archived videos and documents. Your AI Researcher is ready.
         </p>
       </div>
 
@@ -60,7 +60,7 @@ export default function NewChatPage() {
           </button>
         </form>
 
-        {/* Suggestion Chips */}
+        {/* Suggestion Chips
         <div className="flex flex-wrap justify-center gap-3 mt-8 animate-in fade-in slide-in-from-bottom-4 duration-700 delay-200">
           {suggestions.map((text, i) => (
             <button
@@ -72,7 +72,7 @@ export default function NewChatPage() {
               {text}
             </button>
           ))}
-        </div>
+        </div> */}
       </div>
     </div>
   );
