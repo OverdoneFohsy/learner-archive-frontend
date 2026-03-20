@@ -135,7 +135,7 @@ export default function ChatPage({ params }: { params: Promise<{id: string }> })
         </p>
       </div>
       
-      <div className="flex flex-wrap justify-center gap-2 mt-4">
+      {/* <div className="flex flex-wrap justify-center gap-2 mt-4">
         {['Summarize my last video', 'Find mentions of React'].map((hint) => (
           <button
             key={hint}
@@ -145,7 +145,7 @@ export default function ChatPage({ params }: { params: Promise<{id: string }> })
             "{hint}"
           </button>
         ))}
-      </div>
+      </div> */}
     </div>)
   }
   else return (

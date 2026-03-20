@@ -90,7 +90,7 @@ export async function getSources() {
 
         if (!response.ok) return {error: `Faiiled to delete source`}
 
-        revalidatePath('/dashboard');
+        revalidatePath('/');
         return {success: true};
     }
     catch(error){
